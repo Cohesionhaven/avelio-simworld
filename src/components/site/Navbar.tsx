@@ -17,7 +17,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/70 bg-background/80 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
+      <div className="site-container flex items-center justify-between py-3">
         <a
           href="#hero"
           className="flex min-w-0 items-center gap-3 text-sm font-semibold uppercase tracking-[0.18em] text-foreground"
@@ -61,7 +61,7 @@ export function Navbar() {
           aria-label="Mobile primary"
           className="border-t border-border/70 bg-background/95 px-4 py-3 shadow-elegant lg:hidden"
         >
-          <div className="mx-auto grid max-w-7xl gap-1">
+          <div className="site-container grid gap-1">
             {navItems.map((item) => (
               <a
                 key={item.href}

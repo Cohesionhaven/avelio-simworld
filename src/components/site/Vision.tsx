@@ -21,7 +21,7 @@ const pillars = [
 export function Vision() {
   return (
     <section className="border-y border-border bg-muted/25 py-16 sm:py-20 lg:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="site-container">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-secondary">Vision</p>
           <h2 className="mt-3 text-3xl font-black leading-tight sm:text-5xl">

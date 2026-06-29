@@ -1,5 +1,6 @@
-import { ArrowRight, Gauge, Globe2, Play, RadioTower } from "lucide-react";
+import { ArrowRight, Gauge, Globe2, Play, RadioTower, Sparkles } from "lucide-react";
 
+import heroMetahuman from "../../assets/hero-metahuman.jpg";
 import heroVideo from "../../assets/video.mp4";
 import { Button } from "../ui/button";
 
@@ -15,20 +16,29 @@ export function Hero() {
         playsInline
         aria-hidden="true"
       />
-      <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,hsl(var(--background)/0.96),hsl(var(--background)/0.74)_48%,hsl(var(--background)/0.46)),linear-gradient(180deg,hsl(var(--background)/0.12),hsl(var(--background)))]" />
+      <div className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,hsl(var(--background)/0.96),hsl(var(--background)/0.78)_46%,hsl(var(--background)/0.54)),linear-gradient(180deg,hsl(var(--background)/0.12),hsl(var(--background)))]" />
+      <div className="cyber-scan -z-10" />
 
-      <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 md:py-16 lg:min-h-[calc(84svh-65px)] lg:grid-cols-[1.04fr_0.96fr] lg:px-8 lg:py-16">
+      <div className="site-container grid items-center gap-10 py-14 md:py-16 lg:min-h-[calc(86svh-65px)] lg:grid-cols-[0.98fr_1.02fr] lg:py-16">
         <div className="max-w-3xl">
           <div className="mb-5 inline-flex items-center gap-2 rounded-md border border-primary/25 bg-primary/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
             <RadioTower className="size-4" />
-            Live world simulation platform
+            Cyberpunk AI metahuman simworld
           </div>
           <h1 className="max-w-4xl text-balance text-5xl font-black leading-[0.95] text-foreground sm:text-6xl lg:text-7xl">
             Avelio Simworld
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground sm:text-xl">
-            Build, observe, and tune city-scale digital twins where traffic, weather, energy, and people react as one living system.
+            A living simulation universe for AI metahumans, virtual cities, and cross-reality stories. Build characters that remember, react, and evolve inside cinematic worlds.
           </p>
+          <div className="mt-6 grid gap-3 text-sm text-muted-foreground sm:grid-cols-3">
+            {["AI citizens", "VR/AR ready", "Realtime worlds"].map((item) => (
+              <div key={item} className="flex items-center gap-2 rounded-md border border-primary/20 bg-background/55 px-3 py-2">
+                <Sparkles className="size-4 text-primary" />
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button size="xl" asChild>
               <a href="#waitlist">
@@ -45,9 +55,9 @@ export function Hero() {
           </div>
           <dl className="mt-10 grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
             {[
-              ["12 ms", "agent tick"],
-              ["4.8M", "active entities"],
-              ["99.98%", "scenario uptime"],
+              ["24/7", "living agents"],
+              ["3D", "world engine"],
+              ["∞", "story branches"],
             ].map(([value, label]) => (
               <div key={label} className="glass rounded-md p-4">
                 <dt className="text-2xl font-black text-foreground">{value}</dt>
@@ -57,7 +67,40 @@ export function Hero() {
           </dl>
         </div>
 
-        <div className="glass-strong relative mx-auto hidden w-full max-w-xl rounded-md p-4 shadow-glow md:block lg:mr-0">
+        <div className="relative mx-auto hidden w-full max-w-xl md:block lg:mr-0">
+          <div className="neon-frame overflow-hidden rounded-md bg-background shadow-glow">
+            <img
+              src={heroMetahuman}
+              alt="Cyberpunk AI metahuman avatar rendered inside Avelio Simworld"
+              className="aspect-square w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,transparent,hsl(var(--background)/0.1)_38%,hsl(var(--background)/0.82))]" />
+            <div className="cyber-scan" />
+          </div>
+          <div className="glass-strong absolute -bottom-6 left-4 right-4 rounded-md p-4 shadow-glow">
+            <div className="flex items-center justify-between gap-3 border-b border-border pb-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Metahuman node</p>
+                <h2 className="mt-1 text-lg font-bold">Nova-7 is online</h2>
+              </div>
+              <span className="rounded-md bg-primary px-2.5 py-1 text-xs font-bold text-primary-foreground">Live</span>
+            </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              {[
+                ["Mood", "Curious"],
+                ["Memory", "82%"],
+                ["Scene", "Neon bazaar"],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-md border border-border bg-background/55 p-3">
+                  <span className="text-xs text-muted-foreground">{label}</span>
+                  <div className="mt-1 text-sm font-black">{value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="glass-strong relative mx-auto hidden w-full max-w-xl rounded-md p-4 shadow-glow">
           <div className="mb-4 flex items-center justify-between border-b border-border pb-3">
             <div>
               <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Scenario control</p>
@@ -88,7 +131,7 @@ export function Hero() {
             <div className="flex items-center gap-3">
               <Globe2 className="size-5 text-accent" />
               <p className="text-sm leading-6 text-muted-foreground">
-                26 interventions queued across mobility, flood routing, emergency services, and local energy markets.
+                26 story interventions queued across metahuman memory, city state, cinematic events, and player choices.
               </p>
             </div>
           </div>

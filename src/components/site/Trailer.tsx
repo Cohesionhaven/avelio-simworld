@@ -5,7 +5,7 @@ import trailerVideo from "../../assets/video.mp4";
 export function Trailer() {
   return (
     <section className="bg-background py-16 sm:py-20 lg:py-24">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[1.35fr_0.65fr] lg:px-8">
+      <div className="site-container grid gap-8 lg:grid-cols-[1.35fr_0.65fr]">
         <div className="overflow-hidden rounded-md border border-border bg-card shadow-elegant">
           <div className="flex items-center justify-between border-b border-border px-4 py-3">
             <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">

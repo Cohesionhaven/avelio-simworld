@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WorldSim</title>
+    <meta name="description" content="A cinematic single-page experience for WorldSim." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #020408;
+        --text: #f8fcff;
+        --cyan: #00fff7;
+        --purple: #7000ff;
+        --gold: #d0b05d;
+        --muted: rgba(255, 255, 255, 0.5);
+        --line: rgba(255, 255, 255, 0.08);
+        --glow: rgba(0, 255, 247, 0.15);
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+      body {
+        margin: 0;
+        font-family: 'Rajdhani', sans-serif;
+        color: var(--text);
+        background: var(--bg);
+        overflow-x: hidden;
+        opacity: 0;
+        transition: opacity 1.5s ease;
+      }
+      body.ready { opacity: 1; }
+      a { color: inherit; text-decoration: none; }
+
+      .cursor {
+        position: fixed;
+        left: 0;
+        top: 0;
+        pointer-events: none;
+        z-index: 9999;
+        mix-blend-mode: screen;
+        opacity: 0.9;
+      }
+      .cursor__ring {
+        width: 24px;
+        height: 24px;
+        border: 1px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.6s ease, height 0.6s ease, border-color 0.6s ease;
+      }
+      .cursor__dot {
+        width: 4px;
+        height: 4px;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+      }
+      .cursor.hover .cursor__ring {
+        width: 36px;
+        height: 36px;
+        border-color: rgba(0,255,247,0.5);
+      }
+
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 24px;
+        background: rgba(2, 4, 8, 0.85);
+        backdrop-filter: blur(16px);
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+      }
+      .nav__logo {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.9rem;
+        letter-spacing: 0.35em;
+        color: rgba(255,255,255,0.72);
+      }
+      .nav__link {
+        display: inline-block;
+        padding: 10px 18px;
+        border: 1px solid rgba(255,255,255,0.18);
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.68rem;
+        letter-spacing: 0.25em;
+        color: rgba(255,255,255,0.78);
+        transition: border-color .8s ease, color .8s ease;
+      }
+      .nav__link:hover {
+        color: var(--cyan);
+        border-color: rgba(0,255,247,0.5);
+      }
+      .nav::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: -1px;
+        width: 30%;
+        height: 1px;
+        background: rgba(0,255,247,0.5);
+        transform: translateX(-50%);
+        animation: pulseLine 3s ease-in-out infinite;
+        opacity: 0.4;
+      }
+      @keyframes pulseLine {
+        0%, 100% { opacity: 0.4; }
+        50% { opacity: 0.75; }
+      }
+
+      section {
+        position: relative;
+        min-height: 100vh;
+        padding: 96px 24px 72px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .section-shell {
+        position: relative;
+        z-index: 2;
+        width: min(100%, 1100px);
+      }
+      .hero { padding-top: 32px; }
+      .hero canvas,
+      .scene-canvas,
+      .waitlist-canvas {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .hero__content,
+      .question__content,
+      .vision__content,
+      .waitlist__content {
+        position: relative;
+        z-index: 2;
+        text-align: center;
+      }
+      .eyebrow {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.9rem;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 24px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 1.2s cubic-bezier(0.25,0.46,0.45,0.94);
+      }
+      .title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: clamp(4rem, 14vw, 10rem);
+        font-weight: 900;
+        letter-spacing: 0.3em;
+        margin: 0 0 18px;
+        text-shadow: 0 0 80px rgba(0,255,247,0.15);
+        color: white;
+        opacity: 0;
+        transform: translateY(24px);
+        transition: all 1.8s cubic-bezier(0.25,0.46,0.45,0.94);
+      }
+      .subtitle {
+        font-size: 1.1rem;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.4);
+        margin: 0 0 28px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 1.8s cubic-bezier(0.25,0.46,0.45,0.94);
+      }
+      .cta {
+        display: inline-block;
+        padding: 14px 50px;
+        border: 1px solid rgba(255,255,255,0.18);
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.75rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.7);
+        transition: border-color .8s ease, color .8s ease, background .8s ease;
+        opacity: 0;
+        transform: translateY(18px);
+        transition: all 1.8s cubic-bezier(0.25,0.46,0.45,0.94);
+      }
+      .cta:hover {
+        border-color: rgba(0,255,247,0.5);
+        color: var(--cyan);
+        background: rgba(0,255,247,0.06);
+      }
+      .reveal {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: opacity 1.2s cubic-bezier(0.25,0.46,0.45,0.94), transform 1.2s cubic-bezier(0.25,0.46,0.45,0.94);
+      }
+      .reveal.visible,
+      .eyebrow.visible,
+      .title.visible,
+      .subtitle.visible,
+      .cta.visible {
+        opacity: 1;
+        transform: none;
+      }
+      .scroll-indicator {
+        position: absolute;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        opacity: 0.45;
+        animation: pulse 2s ease-in-out infinite;
+      }
+      .scroll-indicator span {
+        width: 10px;
+        height: 10px;
+        border-right: 1px solid rgba(255,255,255,0.45);
+        border-bottom: 1px solid rgba(255,255,255,0.45);
+        transform: rotate(45deg);
+      }
+      @keyframes pulse {
+        0%,100% { opacity: 0.2; }
+        50% { opacity: 0.6; }
+      }
+
+      .question__content {
+        max-width: 760px;
+        padding: 32px;
+      }
+      .question__content .line {
+        display: block;
+        margin: 10px auto;
+        font-size: clamp(1.3rem, 2vw, 1.6rem);
+        color: rgba(255,255,255,0.6);
+        font-style: italic;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 1.2s cubic-bezier(0.25,0.46,0.45,0.94);
+      }
+      .question__content .line.headline {
+        font-family: 'Orbitron', sans-serif;
+        font-size: clamp(2rem, 3vw, 2.8rem);
+        font-weight: 700;
+        color: #fff;
+        font-style: normal;
+      }
+      .question__content .line.large {
+        font-family: 'Orbitron', sans-serif;
+        font-size: clamp(2.4rem, 4vw, 3.2rem);
+        font-weight: 900;
+        font-style: normal;
+        color: white;
+        animation: breathe 4s ease-in-out infinite;
+      }
+      .question__content .line.large span {
+        background: linear-gradient(135deg, #fff, var(--cyan));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .question__content .line.underlined {
+        position: relative;
+        display: inline-block;
+        margin-top: 18px;
+      }
+      .question__content .line.underlined::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -8px;
+        width: 0;
+        height: 1px;
+        background: rgba(0,255,247,0.4);
+        transition: width 1.5s ease;
+      }
+      .question__content .line.underlined.visible::after {
+        width: 100%;
+      }
+      @keyframes breathe {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+      }
+
+      .world__section { min-height: 100vh; }
+      .world__content {
+        position: relative;
+        z-index: 2;
+        max-width: 860px;
+        margin: 0 auto;
+        text-align: center;
+      }
+      .world__label {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 0.65rem;
+        letter-spacing: 0.4em;
+        text-transform: uppercase;
+        color: rgba(0,255,247,0.32);
+        margin-bottom: 14px;
+      }
+      .world__headline {
+        font-family: 'Orbitron', sans-serif;
+        font-size: clamp(2rem, 6vw, 4.5rem);
+        letter-spacing: 0.06em;
+        margin: 0 0 18px;
+        color: rgba(255,255,255,0.92);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 1.2s cubic-bezier(0.25,0.46,0.45,0.94);
+      }
+      .world__headline.visible { opacity: 1; transform: none; }
+      .world__body {
+        font-size: 1.15rem;
+        line-height: 1.7;
+        color: rgba(255,255,255,0.55);
+        max-width: 650px;
+        margin: 0 auto 22px;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 1.2s cubic-bezier(0.25,0.46,0.45,0.94);
+      }
+      .world__body.visible { opacity: 1; transform: none; }
+      .world__divider {
+        width: 0;
+        height: 1px;
+        background: rgba(0,255,247,0.12);
+        margin: 28px auto 0;
+        transition: width 2s ease;
+      }
+      .world__divider.visible { width: 100%; }
+
+      .feelings { padding-top: 84px; }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0,1fr));
+        gap: 24px;
+        width: min(100%, 1000px);
+      }
+      .card {
+        position: relative;
+        padding: 36px 28px;
+        border: 1px solid rgba(255,255,255,0.05);
+        background: rgba(255,255,255,0.03);
+        backdrop-filter: blur(14px);
+        min-height: 320px;
+        opacity: 0;
+        transform: translateY(24px);
+        transition: all 1.2s cubic-bezier(0.25,0.46,0.45,0.94);
+      }
+      .card.visible { opacity: 1; transform: none; }
+      .card canvas { width: 100%; height: 100px; display: block; margin-bottom: 18px; }
+      .card h3 {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.05rem;
+        letter-spacing: 0.2em;
+        margin: 0 0 8px;
+      }
+      .card p { margin: 0 0 8px; line-height: 1.6; color: rgba(255,255,255,0.5); }
+      .card p.small { color: rgba(255,255,255,0.4); }
+
+      .vision {
+        min-height: 100vh;
+        padding-top: 100px;
+      }
+      .vision__content {
+        max-width: 820px;
+        padding: 24px;
+      }
+      .vision__content .line {
+        display: block;
+        margin: 10px auto;
+        font-size: clamp(1.2rem, 2.8vw, 1.8rem);
+        color: rgba(255,255,255,0.8);
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 1.4s cubic-bezier(0.25,0.46,0.45,0.94);
+      }
+      .vision__content .line.top { font-size: clamp(1rem, 1.8vw, 1.2rem); letter-spacing: 0.32em; text-transform: uppercase; color: rgba(255,255,255,0.36); }
+      .vision__content .line.emphasis {
+        font-family: 'Orbitron', sans-serif;
+        font-size: clamp(1.8rem, 4vw, 3.2rem);
+        font-weight: 900;
+        color: white;
+      }
+      .vision__content .line.dim { color: rgba(255,255,255,0.55); }
+      .vision__content .line.final {
+        font-family: 'Orbitron', sans-serif;
+        font-size: clamp(3rem, 10vw, 7rem);
+        font-weight: 900;
+        color: white;
+        margin-top: 28px;
+        animation: breathe 4s ease-in-out infinite;
+      }
+      .vision__line {
+        width: 0;
+        height: 1px;
+        background: rgba(0,255,247,0.15);
+        margin: 22px auto;
+        transition: width 1.5s ease;
+      }
+      .vision__line.visible { width: min(100%, 360px); }
+
+      .waitlist { padding-top: 92px; }
+      .waitlist__content {
+        max-width: 620px;
+        padding: 28px;
+      }
+      .counter {
+        font-family: 'Orbitron', sans-serif;
+        font-size: clamp(3rem, 10vw, 6rem);
+        color: var(--cyan);
+        text-shadow: 0 0 40px rgba(0,255,247,0.3);
+        margin-bottom: 8px;
+        opacity: 0;
+        transform: translateY(18px);
+        transition: all 1.2s cubic-bezier(0.25,0.46,0.45,0.94);
+      }
+      .counter.visible { opacity: 1; transform: none; }
+      .waitlist__copy { font-size: 1.05rem; color: rgba(255,255,255,0.5); margin-bottom: 28px; }
+      .waitlist__heading {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.15rem;
+        letter-spacing: 0.24em;
+        margin-bottom: 8px;
+      }
+      .form-wrap { max-width: 400px; margin: 0 auto; }
+      .field {
+        width: 100%;
+        border: 1px solid rgba(255,255,255,0.08);
+        background: rgba(255,255,255,0.03);
+        color: var(--text);
+        padding: 16px 20px;
+        font: 400 0.96rem 'Rajdhani', sans-serif;
+        margin-bottom: 12px;
+        outline: none;
+        transition: border-color .6s ease, background .6s ease;
+      }
+      .field:focus { border-color: rgba(0,255,247,0.3); background: rgba(255,255,255,0.05); }
+      .button {
+        width: 100%;
+        border: 1px solid rgba(0,255,247,0.3);
+        background: transparent;
+        color: var(--cyan);
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 1rem;
+        font-style: italic;
+        padding: 16px 20px;
+        cursor: pointer;
+        transition: background .8s ease, border-color .8s ease, color .8s ease;
+      }
+      .button:hover { background: rgba(0,255,247,0.1); }
+      .success {
+        margin-top: 18px;
+        color: rgba(255,255,255,0.7);
+        opacity: 0;
+        transform: translateY(12px);
+        transition: all 1.2s ease;
+      }
+      .success.visible { opacity: 1; transform: none; }
+      .tiers {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-top: 24px;
+      }
+      .pill {
+        padding: 10px 22px;
+        border: 1px solid rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.7);
+        font-size: 0.9rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        transition: border-color .6s ease, color .6s ease;
+      }
+      .pill:hover { border-color: rgba(0,255,247,0.45); color: white; }
+
+      footer {
+        padding: 24px 24px 44px;
+        border-top: 1px solid rgba(255,255,255,0.04);
+        display: flex;
+        justify-content: space-between;
+        gap: 18px;
+        font-size: 0.82rem;
+        color: rgba(255,255,255,0.2);
+      }
+
+      .overlay {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center bottom, rgba(0,255,247,0.04), transparent 55%);
+        pointer-events: none;
+      }
+      .vignette {
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle, transparent 0%, rgba(2,4,8,0.25) 70%, rgba(2,4,8,0.75) 100%);
+        pointer-events: none;
+      }
+      .section-line {
+        position: absolute;
+        inset: auto 0 0 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+      }
+
+      @media (max-width: 768px) {
+        .nav { padding: 16px 18px; }
+        .nav__logo { font-size: 0.78rem; letter-spacing: 0.28em; }
+        .nav__link { padding: 8px 12px; font-size: 0.62rem; }
+        section { padding: 88px 18px 60px; }
+        .grid { grid-template-columns: 1fr; }
+        .question__content { padding: 12px; }
+        .waitlist__content { padding: 12px; }
+        footer { flex-direction: column; align-items: center; text-align: center; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cursor" aria-hidden="true">
+      <div class="cursor__ring"></div>
+      <div class="cursor__dot"></div>
+    </div>
+
+    <nav class="nav" aria-label="Primary">
+      <a class="nav__logo" href="#hero">W O R L D S I M</a>
+      <a class="nav__link" href="#waitlist">JOIN THE WORLD</a>
+    </nav>
+
+    <section id="hero" class="hero">
+      <canvas id="heroCanvas"></canvas>
+      <div class="overlay"></div>
+      <div class="section-shell hero__content">
+        <div class="eyebrow">A new kind of world is being built.</div>
+        <h1 class="title">W O R L D S I M</h1>
+        <p class="subtitle">The world that feels real.</p>
+        <a class="cta" href="#question">Enter</a>
+      </div>
+      <div class="scroll-indicator" aria-hidden="true">
+        <span></span>
+        <span></span>
+      </div>
+    </section>
+
+    <section id="question" class="question">
+      <div class="overlay"></div>
+      <div class="vignette"></div>
+      <div class="section-shell question__content">
+        <div class="line headline reveal">Every day.</div>
+        <div class="line reveal">You wake up in the same place.</div>
+        <div class="line reveal">Open the same apps.</div>
+        <div class="line reveal">See the same faces.</div>
+        <div class="line large reveal"><span>What if there was more?</span></div>
+        <div class="line underlined reveal">Not a game.</div>
+        <div class="line reveal">Not an app.</div>
+        <div class="line large reveal"><span>A world.</span></div>
+      </div>
+    </section>
+
+    <section class="world__section">
+      <canvas class="scene-canvas" id="sceneCanvas"></canvas>
+      <div class="overlay"></div>
+      <div class="section-shell world__content">
+        <div class="world__label reveal">The world</div>
+        <h2 class="world__headline reveal">Photorealistic.</h2>
+        <p class="world__body reveal">The kind of environment that feels less like a screen and more like weather, light, atmosphere, and distance.</p>
+        <h2 class="world__headline reveal">AI-powered citizens.</h2>
+        <p class="world__body reveal">People who feel human, who remember, who wait, who change.</p>
+        <h2 class="world__headline reveal">Environments that feel real.</h2>
+        <p class="world__body reveal">Built for the headset you already want, for the moment the city loads around you and the boundary disappears.</p>
+        <div class="world__divider reveal"></div>
+      </div>
+    </section>
+
+    <section class="feelings">
+      <div class="overlay"></div>
+      <div class="section-shell">
+        <div class="grid">
+          <article class="card reveal">
+            <canvas id="cardPresence"></canvas>
+            <h3>PRESENCE</h3>
+            <p>You are there.</p>
+            <p class="small">Not watching. Not scrolling. Standing in a city that breathes.</p>
+          </article>
+          <article class="card reveal">
+            <canvas id="cardConnection"></canvas>
+            <h3>CONNECTION</h3>
+            <p>They remember you.</p>
+            <p class="small">The people in this world are not static. They grow. They change. They wait.</p>
+          </article>
+          <article class="card reveal">
+            <canvas id="cardFreedom"></canvas>
+            <h3>FREEDOM</h3>
+            <p>No limits.</p>
+            <p class="small">Build. Explore. Own. A world where what you create remains yours.</p>
+          </article>
+          <article class="card reveal">
+            <canvas id="cardScale"></canvas>
+            <h3>SCALE</h3>
+            <p>You are not alone here.</p>
+            <p class="small">Millions of AI citizens. A civilisation already in motion.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="vision" class="vision">
+      <div class="overlay"></div>
+      <div class="section-shell vision__content">
+        <div class="line top reveal">This is not a game.</div>
+        <div class="line reveal">This is not social media.</div>
+        <div class="line reveal">This is not virtual reality as you know it.</div>
+        <div class="vision__line reveal"></div>
+        <div class="line emphasis reveal">This is the next layer of human experience.</div>
+        <div class="line dim reveal">Built on real-world environments.</div>
+        <div class="line dim reveal">Powered by AI that never sleeps.</div>
+        <div class="line dim reveal">Delivered through the headset on your shelf.</div>
+        <div class="line final reveal">WorldSim.</div>
+      </div>
+    </section>
+
+    <section id="waitlist" class="waitlist">
+      <canvas class="waitlist-canvas" id="waitlistCanvas"></canvas>
+      <div class="overlay"></div>
+      <div class="section-shell waitlist__content">
+        <div class="counter reveal" id="counter">1,247</div>
+        <div class="waitlist__copy reveal">people have already stepped through.</div>
+        <div class="waitlist__heading reveal">We are building this world.</div>
+        <div class="waitlist__copy reveal">We want you in from the first day.</div>
+        <form class="form-wrap reveal" id="signupForm">
+          <input class="field" type="email" name="email" placeholder="your email" required />
+          <button class="button" type="submit">Step through.</button>
+        </form>
+        <div class="success" id="success">You are in. Welcome, citizen.</div>
+        <div class="tiers reveal">
+          <div class="pill">Observer · Free</div>
+          <div class="pill">Pioneer · $9</div>
+          <div class="pill">Builder · $29</div>
+          <div class="pill">Architect · $99</div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div>WORLDSIM</div>
+      <div>The OASIS is real.</div>
+      <div>© 2026</div>
+    </footer>
+
+    <script>
+      document.body.classList.add('ready');
+
+      const cursor = document.querySelector('.cursor');
+      const cursorRing = cursor.querySelector('.cursor__ring');
+      const cursorDot = cursor.querySelector('.cursor__dot');
+      const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (!prefersReducedMotion && window.innerWidth > 768) {
+        document.addEventListener('mousemove', (event) => {
+          cursor.style.transform = `translate(${event.clientX}px, ${event.clientY}px)`;
+          cursorRing.style.transform = 'translate(-50%, -50%)';
+          cursorDot.style.transform = 'translate(-50%, -50%)';
+          cursor.style.left = '0px';
+          cursor.style.top = '0px';
+          cursor.style.position = 'fixed';
+          cursorRing.animate({ transform: [`translate(-50%, -50%)`, `translate(${event.clientX}px, ${event.clientY}px)`] }, { duration: 0, fill: 'both' });
+        });
+      }
+
+      document.querySelectorAll('a, button, .pill, .card').forEach((el) => {
+        el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+        el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+      });
+
+      const revealElements = document.querySelectorAll('.reveal');
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            if (entry.target.classList.contains('line') && entry.target.classList.contains('underlined')) {
+              entry.target.classList.add('visible');
+            }
+          }
+        });
+      }, { threshold: 0.15 });
+      revealElements.forEach((el) => observer.observe(el));
+
+      const heroCanvas = document.getElementById('heroCanvas');
+      const heroCtx = heroCanvas.getContext('2d');
+      const sceneCanvas = document.getElementById('sceneCanvas');
+      const sceneCtx = sceneCanvas.getContext('2d');
+      const waitlistCanvas = document.getElementById('waitlistCanvas');
+      const waitlistCtx = waitlistCanvas.getContext('2d');
+
+      const resizeCanvas = (canvas, ctx) => {
+        const ratio = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * ratio;
+        canvas.height = rect.height * ratio;
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      };
+
+      const createHeroState = () => {
+        const width = heroCanvas.clientWidth;
+        const height = heroCanvas.clientHeight;
+        const points = Array.from({ length: 260 }, () => ({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          r: 0.5 + Math.random() * 1.1,
+          alpha: 0.2 + Math.random() * 0.6,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.004 + Math.random() * 0.002,
+        }));
+        const rain = Array.from({ length: 80 }, () => ({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          length: 8 + Math.random() * 8,
+          speed: 0.8 + Math.random() * 0.7,
+        }));
+        return { points, rain, width, height };
+      };
+
+      const heroState = createHeroState();
+      let heroScroll = 0;
+      const animateHero = () => {
+        resizeCanvas(heroCanvas, heroCtx);
+        const width = heroCanvas.clientWidth;
+        const height = heroCanvas.clientHeight;
+        heroCtx.clearRect(0, 0, width, height);
+        heroCtx.fillStyle = '#020408';
+        heroCtx.fillRect(0, 0, width, height);
+        heroCtx.globalAlpha = 0.55;
+        for (let i = 0; i < 5; i++) {
+          heroCtx.strokeStyle = `rgba(255,255,255,${0.02 + i * 0.004})`;
+          heroCtx.beginPath();
+          heroCtx.moveTo(0, height * (0.2 + i * 0.12));
+          heroCtx.lineTo(width, height * (0.2 + i * 0.12));
+          heroCtx.stroke();
+        }
+        heroCtx.globalAlpha = 1;
+        heroCtx.fillStyle = 'rgba(0,255,247,0.06)';
+        const grad = heroCtx.createRadialGradient(width * 0.5, height * 0.8, 20, width * 0.5, height * 0.8, width * 0.5);
+        grad.addColorStop(0, 'rgba(0,255,247,0.04)');
+        grad.addColorStop(1, 'rgba(0,255,247,0)');
+        heroCtx.fillStyle = grad;
+        heroCtx.fillRect(0, 0, width, height);
+        heroState.points.forEach((p) => {
+          const pulse = (Math.sin(Date.now() * p.speed + p.phase) + 1) / 2;
+          heroCtx.beginPath();
+          heroCtx.fillStyle = `rgba(255,255,255,${p.alpha * (0.5 + pulse * 0.5)})`;
+          heroCtx.arc(p.x + heroScroll * 0.04, p.y, p.r, 0, Math.PI * 2);
+          heroCtx.fill();
+        });
+        heroState.rain.forEach((drop) => {
+          drop.y += drop.speed;
+          if (drop.y > height + drop.length) {
+            drop.y = -drop.length;
+            drop.x = Math.random() * width;
+          }
+          heroCtx.strokeStyle = `rgba(255,255,255,0.05)`;
+          heroCtx.beginPath();
+          heroCtx.moveTo(drop.x, drop.y);
+          heroCtx.lineTo(drop.x, drop.y + drop.length);
+          heroCtx.stroke();
+        });
+        heroScroll += 0.005;
+        requestAnimationFrame(animateHero);
+      };
+      animateHero();
+
+      const createSceneState = () => {
+        const width = sceneCanvas.clientWidth;
+        const height = sceneCanvas.clientHeight;
+        return {
+          width,
+          height,
+          particles: Array.from({ length: 30 }, () => ({ x: Math.random() * width, y: Math.random() * height, size: 0.6 + Math.random() * 0.8, speed: 0.08 + Math.random() * 0.2, alpha: 0.05 + Math.random() * 0.1 }))
+        };
+      };
+      const sceneState = createSceneState();
+      const animateScene = () => {
+        resizeCanvas(sceneCanvas, sceneCtx);
+        const width = sceneCanvas.clientWidth;
+        const height = sceneCanvas.clientHeight;
+        sceneCtx.clearRect(0, 0, width, height);
+        sceneCtx.fillStyle = '#020408';
+        sceneCtx.fillRect(0, 0, width, height);
+        sceneCtx.strokeStyle = 'rgba(0,255,247,0.16)';
+        sceneCtx.beginPath();
+        sceneCtx.moveTo(width * 0.2, height * 0.6);
+        sceneCtx.lineTo(width * 0.8, height * 0.6);
+        sceneCtx.stroke();
+        sceneCtx.strokeStyle = 'rgba(0,255,247,0.08)';
+        sceneCtx.beginPath();
+        sceneCtx.moveTo(width * 0.2, height * 0.6 + 12);
+        sceneCtx.lineTo(width * 0.8, height * 0.6 + 12);
+        sceneCtx.stroke();
+        for (let i = 0; i < 10; i++) {
+          const x = width * 0.15 + i * (width * 0.07);
+          sceneCtx.strokeStyle = 'rgba(255,255,255,0.06)';
+          sceneCtx.beginPath();
+          sceneCtx.moveTo(x, height * 0.6);
+          sceneCtx.lineTo(x + 20, height * 0.6 - 90);
+          sceneCtx.stroke();
+          sceneCtx.fillStyle = 'rgba(0,255,247,0.35)';
+          sceneCtx.beginPath();
+          sceneCtx.arc(x + 20, height * 0.6 - 90, 1.4, 0, Math.PI * 2);
+          sceneCtx.fill();
+        }
+        sceneCtx.strokeStyle = 'rgba(0,255,247,0.05)';
+        for (let i = 0; i < 8; i++) {
+          const x = width * 0.18 + i * (width * 0.085);
+          sceneCtx.beginPath();
+          sceneCtx.moveTo(x, height * 0.6 + 8);
+          sceneCtx.lineTo(width * 0.5, height * 0.5 + 20);
+          sceneCtx.stroke();
+        }
+        sceneState.particles.forEach((p) => {
+          p.y -= p.speed;
+          if (p.y < -4) p.y = height + 4;
+          sceneCtx.beginPath();
+          sceneCtx.fillStyle = `rgba(0,255,247,${p.alpha})`;
+          sceneCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+          sceneCtx.fill();
+        });
+        requestAnimationFrame(animateScene);
+      };
+      animateScene();
+
+      const animateWaitlist = () => {
+        resizeCanvas(waitlistCanvas, waitlistCtx);
+        const width = waitlistCanvas.clientWidth;
+        const height = waitlistCanvas.clientHeight;
+        waitlistCtx.clearRect(0, 0, width, height);
+        waitlistCtx.fillStyle = '#020408';
+        waitlistCtx.fillRect(0, 0, width, height);
+        const grad = waitlistCtx.createRadialGradient(width * 0.5, height * 0.9, 20, width * 0.5, height * 0.9, width * 0.5);
+        grad.addColorStop(0, 'rgba(208,176,93,0.06)');
+        grad.addColorStop(1, 'rgba(208,176,93,0)');
+        waitlistCtx.fillStyle = grad;
+        waitlistCtx.fillRect(0, 0, width, height);
+        for (let i = 0; i < 180; i++) {
+          const x = (i * 31) % width;
+          const y = (i * 13) % height;
+          waitlistCtx.fillStyle = `rgba(255,255,255,${0.02 + (i % 5) * 0.01})`;
+          waitlistCtx.beginPath();
+          waitlistCtx.arc(x, y, 0.8, 0, Math.PI * 2);
+          waitlistCtx.fill();
+        }
+        requestAnimationFrame(animateWaitlist);
+      };
+      animateWaitlist();
+
+      const cardCanvases = {
+        cardPresence: document.getElementById('cardPresence'),
+        cardConnection: document.getElementById('cardConnection'),
+        cardFreedom: document.getElementById('cardFreedom'),
+        cardScale: document.getElementById('cardScale')
+      };
+
+      const drawPresence = (ctx, width, height, t) => {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#020408';
+        ctx.fillRect(0, 0, width, height);
+        const pulse = 3 + Math.sin(t / 800) * 5;
+        const g = ctx.createRadialGradient(width / 2, height / 2, 1, width / 2, height / 2, pulse * 6);
+        g.addColorStop(0, 'rgba(0,255,247,0.25)');
+        g.addColorStop(1, 'rgba(0,255,247,0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(width / 2, height / 2, pulse * 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+        for (let i = 0; i < 6; i++) {
+          const angle = (t / 2500) + i * (Math.PI / 3);
+          const x = width / 2 + Math.cos(angle) * (18 + i * 5);
+          const y = height / 2 + Math.sin(angle) * (10 + i * 3);
+          ctx.beginPath();
+          ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255,255,255,0.22)';
+          ctx.fill();
+        }
+      };
+
+      const drawConnection = (ctx, width, height, t) => {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#020408';
+        ctx.fillRect(0, 0, width, height);
+        const p1 = { x: 24, y: height / 2 + 8 };
+        const p2 = { x: width - 24, y: height / 2 - 8 };
+        const curve = Math.sin(t / 1400) * 0.5 + 0.5;
+        ctx.strokeStyle = 'rgba(0,255,247,0.28)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.quadraticCurveTo(width / 2, height / 2 - 18 - curve * 18, p2.x, p2.y);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(255,255,255,0.35)';
+        ctx.beginPath();
+        ctx.arc(p1.x, p1.y, 2.1, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(p2.x, p2.y, 2.1, 0, Math.PI * 2);
+        ctx.fill();
+      };
+
+      const drawFreedom = (ctx, width, height, t) => {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#020408';
+        ctx.fillRect(0, 0, width, height);
+        const rings = 4;
+        for (let i = 0; i < rings; i++) {
+          const alpha = 0.08 + (rings - i) * 0.03;
+          const radius = 10 + i * 16 + ((t / 2400) % 1) * 8;
+          ctx.strokeStyle = `rgba(112,0,255,${alpha})`;
+          ctx.beginPath();
+          ctx.arc(width / 2, height / 2, radius, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      };
+
+      const drawScale = (ctx, width, height, t) => {
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#020408';
+        ctx.fillRect(0, 0, width, height);
+        for (let i = 0; i < 24; i++) {
+          const x = (i * 18 + t / 40) % (width + 30) - 20;
+          const y = 12 + (i % 4) * 16;
+          ctx.fillStyle = 'rgba(255,255,255,0.16)';
+          ctx.beginPath();
+          ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      };
+
+      const cardAnimators = {
+        cardPresence: (ctx, width, height, t) => drawPresence(ctx, width, height, t),
+        cardConnection: (ctx, width, height, t) => drawConnection(ctx, width, height, t),
+        cardFreedom: (ctx, width, height, t) => drawFreedom(ctx, width, height, t),
+        cardScale: (ctx, width, height, t) => drawScale(ctx, width, height, t)
+      };
+
+      Object.entries(cardCanvases).forEach(([id, canvas]) => {
+        const ctx = canvas.getContext('2d');
+        const render = () => {
+          const ratio = window.devicePixelRatio || 1;
+          const rect = canvas.getBoundingClientRect();
+          if (canvas.width !== rect.width * ratio) {
+            canvas.width = rect.width * ratio;
+            canvas.height = rect.height * ratio;
+            ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+          }
+          const width = rect.width;
+          const height = rect.height;
+          cardAnimators[id](ctx, width, height, performance.now());
+          requestAnimationFrame(render);
+        };
+        render();
+      });
+
+      const signupForm = document.getElementById('signupForm');
+      const success = document.getElementById('success');
+      signupForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        success.classList.add('visible');
+      });
+
+      let frame = 0;
+      const counter = document.getElementById('counter');
+      const target = 1247;
+      const animateCounter = () => {
+        const value = Math.floor(target * (frame / 120));
+        counter.textContent = value.toLocaleString();
+        frame += 1;
+        if (frame <= 120) requestAnimationFrame(animateCounter);
+      };
+      setTimeout(() => animateCounter(), 600);
+
+      window.addEventListener('scroll', () => {
+        const hero = document.getElementById('hero');
+        const y = window.scrollY;
+        hero.style.transform = `translateY(${y * 0.03}px)`;
+      }, { passive: true });
+    </script>
+  </body>
+</html>

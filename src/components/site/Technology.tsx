@@ -26,7 +26,7 @@ const systems = [
 export function Technology() {
   return (
     <section className="py-16 sm:py-20 lg:py-24">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="site-container">
         <div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-start">
           <div className="lg:sticky lg:top-28">
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Technology</p>
