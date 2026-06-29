@@ -18,13 +18,27 @@ const Index = () => (
     </a>
     <Navbar />
     <main id="main">
-      <Hero />
-      <Trailer />
-      <Vision />
-      <Technology />
-      <Devices />
-      <Roadmap />
-      <Waitlist />
+      <div id="hero" className="scroll-mt-24">
+        <Hero />
+      </div>
+      <div id="trailer" className="scroll-mt-24">
+        <Trailer />
+      </div>
+      <div id="vision" className="scroll-mt-24">
+        <Vision />
+      </div>
+      <div id="technology" className="scroll-mt-24">
+        <Technology />
+      </div>
+      <div id="devices" className="scroll-mt-24">
+        <Devices />
+      </div>
+      <div id="roadmap" className="scroll-mt-24">
+        <Roadmap />
+      </div>
+      <div id="waitlist" className="scroll-mt-24">
+        <Waitlist />
+      </div>
     </main>
     <Footer />
   </div>
